@@ -7,11 +7,12 @@ import sys
 from typing import Any
 
 import cloudpickle
-
+from tenacity import retry, stop_after_attempt, stop_after_delay
 CONTAINER_MAIN = (pathlib.Path(__file__).parent / "container" / "container_main.py").absolute()
 
 IMAGE_NAME = "funsearch_sandbox"
-
+MAX_RUN_TIME = os.getenv("MAX_RUN_TIME")
+MAX_RUN_ATTEMPTS = os.getenv("MAX_RUN_ATTEMPTS")
 
 class DummySandbox:
   """Base class for Sandboxes that execute the generated code.
@@ -29,12 +30,13 @@ class DummySandbox:
 
     DummySandbox.sandboxes += 1
 
+  @retry(stop=(stop_after_delay(MAX_RUN_TIME) | stop_after_attempt(MAX_RUN_ATTEMPTS)))
   def run(
           self,
           program: str,
           function_to_run: str,
           test_input,
-          timeout_seconds: int,
+          timeout_seconds: int,  # Junk
   ) -> tuple[Any, bool]:
     """Returns `function_to_run(test_input)` and whether execution succeeded."""
 

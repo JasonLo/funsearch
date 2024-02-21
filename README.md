@@ -11,7 +11,6 @@ podman build . -t funsearch
 
 
 # Create a folder to share with the container
-mkdir data
 podman run -it -v ./data:/workspace/data funsearch
 
 # Set the environment variable OPENAI_API_KEY=sk-xxxx or create .env file.
@@ -59,7 +58,7 @@ funsearch run examples/cap_set_spec.py 11
 For more complex input data, you can provide the input also as a .json or .pickle file.
 
 Currently, the search is only using single thread with no asyncio and is somewhat slow
-for challenging tasks.  
+for challenging tasks.
 
 ## Alternative LLMs
 
