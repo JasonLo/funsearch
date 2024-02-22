@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build and run in docker (dev)",
+            "label": "run",
             "type": "shell",
-            "command": "docker build . -t funsearch:dev && docker run -it -v ./data:/workspace/data --env-file .env funsearch:dev funsearch run examples/cap_set_spec.py 11 --sandbox_type ExternalProcessSandbox"
+            "command": "source venv/bin/activate && python funsearch run examples/cap_set_spec.py 11 --sandbox_type ContainerSandbox"
         }
     ]
 }
