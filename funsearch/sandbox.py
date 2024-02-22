@@ -205,8 +205,6 @@ class ContainerSandbox(ExternalProcessSandbox):
         if not ContainerSandbox.image_built:
             ContainerSandbox.build_image(extra_pip_packages)
 
-    # @retry(stop=stop_after_attempt(MAX_RUN_ATTEMPTS))
-    # @timeout(MAX_RUN_TIME)
     def _exec(
         self,
         call_data_path: pathlib.Path,
@@ -221,6 +219,7 @@ class ContainerSandbox(ExternalProcessSandbox):
         for future runs.
         """
         cmd = (
+            f"timeout --signal=KILL {self.timeout_secs} "
             f"{self.executable} run --rm "
             f"--stop-timeout={self.timeout_secs} "
             f"-v {CONTAINER_MAIN}:/main.py:ro "
