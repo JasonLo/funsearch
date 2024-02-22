@@ -14,43 +14,13 @@
 # ==============================================================================
 
 """Class for sampling new programs."""
-from collections.abc import Collection, Sequence
+from collections.abc import Sequence
 
-import llm
 import numpy as np
 
 from funsearch import evaluator
 from funsearch import programs_database
-
-
-class LLM:
-    """Language model that predicts continuation of provided source code."""
-
-    def __init__(
-        self, samples_per_prompt: int, model: llm.Model, log_path=None
-    ) -> None:
-        self._samples_per_prompt = samples_per_prompt
-        self.model = model
-        self.prompt_count = 0
-        self.log_path = log_path
-
-    def _draw_sample(self, prompt: str) -> str:
-        """Returns a predicted continuation of `prompt`."""
-        response = self.model.prompt(prompt)
-        self._log(prompt, response, self.prompt_count)
-        self.prompt_count += 1
-        return response
-
-    def draw_samples(self, prompt: str) -> Collection[str]:
-        """Returns multiple predicted continuations of `prompt`."""
-        return [self._draw_sample(prompt) for _ in range(self._samples_per_prompt)]
-
-    def _log(self, prompt: str, response: str, index: int):
-        if self.log_path is not None:
-            with open(self.log_path / f"prompt_{index}.log", "a") as f:
-                f.write(prompt)
-            with open(self.log_path / f"response_{index}.log", "a") as f:
-                f.write(str(response))
+from funsearch import llm
 
 
 class Sampler:
@@ -60,7 +30,7 @@ class Sampler:
         self,
         database: programs_database.ProgramsDatabase,
         evaluators: Sequence[evaluator.Evaluator],
-        model: LLM,
+        model: llm.LLM,
     ) -> None:
         self._database = database
         self._evaluators = evaluators

@@ -13,7 +13,6 @@ CONTAINER_MAIN = (
 
 IMAGE_NAME = "funsearch_sandbox"
 MAX_RUN_TIME = int(os.getenv("MAX_RUN_TIME", 60))
-MAX_RUN_ATTEMPTS = int(os.getenv("MAX_RUN_ATTEMPTS", 3))
 
 
 class DummySandbox:
@@ -198,7 +197,7 @@ class ContainerSandbox(ExternalProcessSandbox):
         self,
         base_path: pathlib.Path,
         extra_pip_packages: str = "numpy",
-        timeout_secs=30,
+        timeout_secs=MAX_RUN_TIME,
     ):
         super(ContainerSandbox, self).__init__(base_path, timeout_secs)
 
@@ -222,6 +221,7 @@ class ContainerSandbox(ExternalProcessSandbox):
             f"timeout --signal=KILL {self.timeout_secs} "
             f"{self.executable} run --rm "
             f"--stop-timeout={self.timeout_secs} "
+            f'--network="host" '
             f"-v {CONTAINER_MAIN}:/main.py:ro "
             f"-v {call_data_path}:/workspace "
             f"-v {input_path}:/input.pickle:ro "

@@ -1,15 +1,11 @@
 import json
 import logging
-import os
 import pathlib
 import pickle
-import time
 
 import click
 import llm
 from dotenv import load_dotenv
-
-load_dotenv()
 
 from funsearch import (
     config,
@@ -21,8 +17,8 @@ from funsearch import (
     evaluator,
 )
 
-LOGLEVEL = os.environ.get("LOGLEVEL", "INFO").upper()
-logging.basicConfig(level=LOGLEVEL)
+load_dotenv()
+logging.basicConfig(level=logging.DEBUG)
 
 
 def get_all_subclasses(cls):
@@ -66,9 +62,10 @@ def main(ctx):
 
 
 @main.command()
+@click.argument("run_name")
 @click.argument("spec_file", type=click.File("r"))
 @click.argument("inputs")
-@click.option("--model_name", default="gpt-3.5-turbo-instruct", help="LLM model")
+@click.option("--model_name", default="codellama:34b-instruct", help="LLM model")
 @click.option(
     "--output_path",
     default="./data/",
@@ -92,6 +89,7 @@ def main(ctx):
     help="Sandbox type",
 )
 def run(
+    run_name,
     spec_file,
     inputs,
     model_name,
@@ -123,15 +121,12 @@ def run(
     # OPENAI_API_KEY=sk-...
     # See 'llm' package on how to use other providers.
 
-    timestamp = str(int(time.time()))
-    log_path = pathlib.Path(output_path) / timestamp
+    log_path = pathlib.Path(output_path) / run_name
     if not log_path.exists():
         log_path.mkdir(parents=True)
         logging.info(f"Writing logs to {log_path}")
 
-    model = llm.get_model(model_name)
-    model.key = model.get_key()
-    lm = sampler.LLM(2, model, log_path)
+    lm = llm.LLM(2, model_name, log_path)
 
     specification = spec_file.read()
     function_to_evolve, function_to_run = core._extract_function_names(specification)
@@ -139,7 +134,7 @@ def run(
 
     conf = config.Config(num_evaluators=1)
     database = programs_database.ProgramsDatabase(
-        conf.programs_database, template, function_to_evolve, identifier=timestamp
+        conf.programs_database, template, function_to_evolve, identifier=run_name
     )
     if load_backup:
         database.load(load_backup)
